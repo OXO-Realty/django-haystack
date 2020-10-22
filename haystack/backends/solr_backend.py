@@ -522,7 +522,10 @@ class SolrSearchBackend(BaseSearchBackend):
         indexed_models = unified_index.get_indexed_models()
 
         for raw_result in raw_results.docs:
-            app_label, model_name = raw_result[DJANGO_CT][0].split(".")
+            if isinstance(raw_result[DJANGO_CT], list):
+                app_label, model_name = raw_result[DJANGO_CT][0].split(".")
+            else:
+                app_label, model_name = raw_result[DJANGO_CT].split(".")
             additional_fields = {}
             model = haystack_get_model(app_label, model_name)
 
@@ -546,7 +549,7 @@ class SolrSearchBackend(BaseSearchBackend):
 
                 del (additional_fields[DJANGO_CT])
 #                 del (additional_fields[DJANGO_ID])
-#                 del (additional_fields["score"])
+                del (additional_fields["score"])
 
                 if raw_result[ID] in getattr(raw_results, "highlighting", {}):
                     additional_fields["highlighted"] = raw_results.highlighting[
@@ -569,7 +572,7 @@ class SolrSearchBackend(BaseSearchBackend):
                     app_label,
                     model_name,
 #                     raw_result[DJANGO_ID],
-#                     raw_result["score"],
+                    raw_result["score"],
                     **additional_fields
                 )
                 results.append(result)
